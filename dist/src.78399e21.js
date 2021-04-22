@@ -42600,9 +42600,11 @@ var _movieCard = require("../movie-card/movie-card");
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 var mapStateToProps = function mapStateToProps(state) {
-  var visibilityFilter = state.visibilityFilter;
+  var visibilityFilter = state.visibilityFilter,
+      movies = state.movies;
   return {
-    visibilityFilter: visibilityFilter
+    visibilityFilter: visibilityFilter,
+    movies: movies
   };
 };
 
@@ -42613,7 +42615,7 @@ function MoviesList(props) {
 
   if (visibilityFilter !== '') {
     filteredMovies = movies.filter(function (m) {
-      return m.Title.includes(visibilityFilter);
+      return m.Title.toLowerCase().includes(visibilityFilter.toLowerCase());
     });
   }
 
@@ -42623,7 +42625,7 @@ function MoviesList(props) {
   return /*#__PURE__*/_react.default.createElement("div", {
     className: "movies-list"
   }, /*#__PURE__*/_react.default.createElement(_visibilityFilterInput.default, {
-    visibilityFilter: visibilityFiler
+    visibilityFilter: visibilityFilter
   }), filteredMovies.map(function (m) {
     return /*#__PURE__*/_react.default.createElement(_movieCard.MovieCard, {
       key: m._id,
@@ -53618,15 +53620,12 @@ var _reactBootstrap = require("react-bootstrap");
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 function MovieView(props) {
-  var backButton = function backButton() {
-    var history = (0, _reactRouterDom.useHistory)();
-    history.push("/");
-  };
+  var history = (0, _reactRouterDom.useHistory)();
 
   function addToFav(movie) {
     var token = localStorage.getItem("token");
 
-    var url = "https://obscure-sands-24856.herokuapp.com/users/" + localStorage.getItem("user") + "/movies/" + movie._id;
+    var url = "http://localhost:8080/users/" + localStorage.getItem("user") + "/movies/" + movie._id;
 
     _axios.default.post(url, {
       headers: {
@@ -53639,7 +53638,7 @@ function MovieView(props) {
     alert("Added to the list!");
   }
 
-  var movie = this.props.movie;
+  var movie = props.movie;
   if (!movie) return null;
   return /*#__PURE__*/_react.default.createElement("div", {
     className: "movie-view movie-border"
@@ -53647,11 +53646,7 @@ function MovieView(props) {
     style: {
       width: "50rem"
     }
-  }, /*#__PURE__*/_react.default.createElement(_reactBootstrap.Image, {
-    className: "movie-poster",
-    src: movie.ImagePath,
-    rounded: true
-  }), /*#__PURE__*/_react.default.createElement(_reactBootstrap.Card.Title, null, movie.Title), /*#__PURE__*/_react.default.createElement(_reactBootstrap.Card.Body, null, /*#__PURE__*/_react.default.createElement(_reactBootstrap.Card.Text, null, movie.Description), /*#__PURE__*/_react.default.createElement(_reactBootstrap.Card.Text, null, "Director: ", movie.Director.Name), /*#__PURE__*/_react.default.createElement(_reactBootstrap.Card.Text, null, "Genre: ", movie.Genre.Name))), /*#__PURE__*/_react.default.createElement(_reactBootstrap.Card.Footer, {
+  }, /*#__PURE__*/_react.default.createElement(_reactBootstrap.Card.Title, null, movie.Title), /*#__PURE__*/_react.default.createElement(_reactBootstrap.Card.Body, null, /*#__PURE__*/_react.default.createElement(_reactBootstrap.Card.Text, null, movie.Description), /*#__PURE__*/_react.default.createElement(_reactBootstrap.Card.Text, null, "Director: ", movie.Director.Name), /*#__PURE__*/_react.default.createElement(_reactBootstrap.Card.Text, null, "Genre: ", movie.Genre.Name))), /*#__PURE__*/_react.default.createElement(_reactBootstrap.Card.Footer, {
     style: {
       width: "50rem"
     }
@@ -53665,7 +53660,7 @@ function MovieView(props) {
     variant: "link"
   }, "Genre")), /*#__PURE__*/_react.default.createElement(_reactBootstrap.Button, {
     onClick: function onClick() {
-      return backButton();
+      return history.push("/");
     }
   }, "Back to previous")));
 }
@@ -53738,7 +53733,7 @@ function LoginView(props) {
   var handleSubmit = function handleSubmit(e) {
     e.preventDefault(); //  Send a request to the server for authentication
 
-    _axios.default.post("https://obscure-sands-24856.herokuapp.com/login", {
+    _axios.default.post("http://localhost:8080/login", {
       Username: username,
       Password: password
     }).then(function (response) {
@@ -53847,7 +53842,7 @@ function RegistrationView(props) {
   var handleSubmit = function handleSubmit(e) {
     e.preventDefault();
 
-    _axios.default.post("https://obscure-sands-24856.herokuapp.com/users", {
+    _axios.default.post("http://localhost:8080/users", {
       Username: username,
       Password: password,
       Email: email
@@ -53987,10 +53982,10 @@ var DirectorView = /*#__PURE__*/function (_React$Component) {
 exports.DirectorView = DirectorView;
 DirectorView.propTypes = {
   movies: _propTypes.default.shape({
-    Director: {
+    Director: _propTypes.default.shape({
       Name: _propTypes.default.string.isRequired,
       Bio: _propTypes.default.string.isRequired
-    }
+    })
   })
 };
 },{"react":"../node_modules/react/index.js","prop-types":"../node_modules/prop-types/index.js","./director-view.scss":"components/director-view/director-view.scss","react-bootstrap/Card":"../node_modules/react-bootstrap/esm/Card.js"}],"components/genre-view/genre-view.scss":[function(require,module,exports) {
@@ -54144,14 +54139,16 @@ function ProfileView(props) {
     var user = localStorage.getItem("user");
     var token = localStorage.getItem("token");
     e.preventDefault();
-
-    _axios.default.put("https://obscure-sands-24856.herokuapp.com/users/".concat(user), {
-      headers: {
-        Authorization: "Bearer ".concat(token)
-      },
+    var data = {
       Username: username,
       Password: password,
       Email: email
+    };
+
+    _axios.default.put("http://localhost:8080/users/".concat(user), data, {
+      headers: {
+        Authorization: "Bearer ".concat(token)
+      }
     }).then(function (response) {
       var data = response.data;
       props.onUpdatedUserInfo(data);
@@ -54203,7 +54200,7 @@ function ProfileView(props) {
 //     }
 //   }
 //   getUser(token) {
-//     let url = 'https://obscure-sands-24856.herokuapp.com/users/' +
+//     let url = 'http://localhost:8080/users/' +
 //     localStorage.getItem("user");
 //     axios.get(url, {headers: {Authorization: `Bearer ${token}`}
 //     })
@@ -54317,7 +54314,7 @@ var ProfileViewInfo = /*#__PURE__*/function (_React$Component) {
     value: function getUser(token) {
       var _this2 = this;
 
-      var url = "https://obscure-sands-24856.herokuapp.com/users/".concat(localStorage.getItem("user"));
+      var url = "http://localhost:8080/users/".concat(localStorage.getItem("user"));
 
       _axios.default.get(url, {
         headers: {
@@ -54339,7 +54336,7 @@ var ProfileViewInfo = /*#__PURE__*/function (_React$Component) {
     value: function removeUser(token) {
       var _this3 = this;
 
-      var url = "https://obscure-sands-24856.herokuapp.com/users/".concat(localStorage.getItem("user"));
+      var url = "http://localhost:8080/users/".concat(localStorage.getItem("user"));
 
       _axios.default.delete(url, {
         headers: {
@@ -54363,7 +54360,7 @@ var ProfileViewInfo = /*#__PURE__*/function (_React$Component) {
     value: function removeFav(movies) {
       var token = localStorage.getItem("token");
 
-      var url = "https://obscure-sands-24856.herokuapp.com/users/" + localStorage.getItem("user") + "/movies/" + movies._id;
+      var url = "http://localhost:8080/users/" + localStorage.getItem("user") + "/movies/" + movies._id;
 
       _axios.default.delete(url, {
         headers: {
@@ -54513,7 +54510,7 @@ var MainView = /*#__PURE__*/function (_React$Component) {
     value: function getMovies(token) {
       var _this2 = this;
 
-      _axios.default.get("https://obscure-sands-24856.herokuapp.com/movies", {
+      _axios.default.get("http://localhost:8080/movies", {
         headers: {
           Authorization: "Bearer ".concat(token)
         }
@@ -54580,7 +54577,7 @@ var MainView = /*#__PURE__*/function (_React$Component) {
     value: function getUser(token) {
       var _this3 = this;
 
-      var url = "https://obscure-sands-24856.herokuapp.com/users/".concat(localStorage.getItem("user"));
+      var url = "http://localhost:8080/users/".concat(localStorage.getItem("user"));
 
       _axios.default.get(url, {
         headers: {
@@ -54636,12 +54633,7 @@ var MainView = /*#__PURE__*/function (_React$Component) {
               return _this4.onLoggedIn(user);
             }
           });
-          return movies.map(function (m) {
-            return /*#__PURE__*/_react.default.createElement(_movieCard.MovieCard, {
-              key: m._id,
-              movie: m
-            });
-          });
+          return /*#__PURE__*/_react.default.createElement(_moviesList.default, null); // return movies.map((m) => <MovieCard key={m._id} movie={m} />);
         }
       }), /*#__PURE__*/_react.default.createElement(_reactRouterDom.Route, {
         path: "/register",
@@ -54880,7 +54872,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = "" || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + "57345" + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + "61106" + '/');
 
   ws.onmessage = function (event) {
     checkedAssets = {};
